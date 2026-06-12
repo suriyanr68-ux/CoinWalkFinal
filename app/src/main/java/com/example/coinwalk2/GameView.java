@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Random;
 
 public class GameView extends View {
+    public void pauseGame() {
+        this.isPaused = true;
+        invalidate(); // สั่งให้วาดหน้าจอใหม่เพื่อแสดงคำว่า GAME PAUSED[cite: 3]
+    }
     private boolean isMainMenu = true;
     private GameUpdateListener updateListener;
 
@@ -87,14 +91,14 @@ public class GameView extends View {
 
         // วาด UI คะแนน[cite: 3]
         paint.setColor(Color.parseColor("#1E293B")); paint.setFakeBoldText(true); paint.setTextAlign(Paint.Align.LEFT);
-        paint.setTextSize(55f); canvas.drawText("Score: " + score, 50f, 100f, paint);
-        paint.setTextSize(45f); canvas.drawText("LV: " + currentLevel, 50f, 175f, paint);
 
         // วาดเลนถนน[cite: 3]
-        paint.setColor(Color.parseColor("#CBD5E1")); paint.setStrokeWidth(6f);
-        for (int i = 1; i <= 2; i++) { float lx = i * laneWidth; canvas.drawLine(lx, 0f, lx, getPlayableBottom(), paint); }
-        paint.setColor(Color.parseColor("#94A3B8")); canvas.drawLine(0, getPlayableBottom(), getWidth(), getPlayableBottom(), paint);
-
+        paint.setColor(Color.parseColor("#CBD5E1"));
+        paint.setStrokeWidth(6f);
+        for (int i = 1; i <= 2; i++) {
+            float lx = i * laneWidth;
+            canvas.drawLine(lx, 0f, lx, getPlayableBottom(), paint);
+        }
         if (!isPaused) {
             gameTick++;
             float playerSpeed = 22f + (currentLevel * 2.0f);
@@ -171,38 +175,75 @@ public class GameView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int action = event.getActionMasked();
-        float touchX = event.getX(); float touchY = event.getY();
+        int action = event.getActionMasked(); //[cite: 3]
+        float touchX = event.getX(); //[cite: 3]
+        float touchY = event.getY(); //[cite: 3]
 
-        switch (action) {
-            case MotionEvent.ACTION_DOWN:
-                startTouchX = touchX; startTouchY = touchY;
-                if (isMainMenu) {
-                    if (touchX >= getWidth() / 2f - 200f && touchX <= getWidth() / 2f + 200f && touchY >= getHeight() / 2f && touchY <= getHeight() / 2f + 120f) {
-                        isMainMenu = false; isPaused = false; invalidate();
-                    }
-                    return true;
-                }
-                if (isPaused) { isPaused = false; invalidate(); return true; }
-                break;
+        switch (action) { //[cite: 3]
+            case MotionEvent.ACTION_DOWN: //[cite: 3]
+                startTouchX = touchX; //[cite: 3]
+                startTouchY = touchY; //[cite: 3]
 
-            case MotionEvent.ACTION_UP:
-                if (!isPaused && !isMainMenu) {
-                    float diffX = touchX - startTouchX; float diffY = touchY - startTouchY;
-                    if (Math.abs(diffX) > minSwipeDistance || Math.abs(diffY) > minSwipeDistance) {
-                        if (Math.abs(diffX) > Math.abs(diffY)) {
-                            if (diffX > 0) { if (player.currentLane < 2) player.currentLane++; }
-                            else { if (player.currentLane > 0) player.currentLane--; }
-                        } else {
-                            if (diffY > 0) { player.duck(); } else { player.jump(); }
+                // 1. ตรวจสอบว่าอยู่หน้าเมนูหลัก และกดปุ่ม START หรือไม่
+                if (isMainMenu) { //[cite: 3]
+                    if (touchX >= getWidth() / 2f - 200f && touchX <= getWidth() / 2f + 200f &&
+                            touchY >= getHeight() / 2f && touchY <= getHeight() / 2f + 120f) { //[cite: 3]
+
+                        isMainMenu = false;
+                        isPaused = false; //[cite: 3]
+
+                        // ส่งสัญญาณบอก MainActivity ให้เปิดการแสดงผลปุ่มต่างๆ บนหน้าจอ
+                        if (updateListener != null) {
+                            updateListener.onGameStarted();
                         }
-                    } else { isPaused = true; invalidate(); }
+
+                        invalidate(); //[cite: 3]
+                    }
+                    return true; //[cite: 3]
                 }
-                performClick();
-                break;
-        }
-        return true;
+
+                // 2. ถ้าเกม Pause อยู่ ให้แตะเพื่อ Resume เล่นต่อ
+                if (isPaused) { //[cite: 3]
+                    isPaused = false; //[cite: 3]
+                    invalidate(); //[cite: 3]
+                    return true; //[cite: 3]
+                }
+                break; //[cite: 3]
+
+            case MotionEvent.ACTION_UP: //[cite: 3]
+                if (!isPaused && !isMainMenu) { //[cite: 3]
+                    float diffX = touchX - startTouchX; //[cite: 3]
+                    float diffY = touchY - startTouchY; //[cite: 3]
+
+                    if (Math.abs(diffX) > minSwipeDistance || Math.abs(diffY) > minSwipeDistance) { //[cite: 3]
+                        if (Math.abs(diffX) > Math.abs(diffY)) { //[cite: 3]
+                            if (diffX > 0) {
+                                if (player.currentLane < 2) player.currentLane++; //[cite: 3]
+                            } else {
+                                if (player.currentLane > 0) player.currentLane--; //[cite: 3]
+                            }
+                        } else {
+                            if (diffY > 0) {
+                                player.duck(); // เรียกคำสั่งก้มจากคลาส Player ที่แยกไว้[cite: 3]
+                            } else {
+                                player.jump(); // ้เรียกคำสั่งกระโดดจากคลาส Player ที่แยกไว้[cite: 3]
+                            }
+                        }
+                    } else {
+                        isPaused = true; //[cite: 3]
+                        invalidate(); //[cite: 3]
+                    }
+                }
+                performClick(); //[cite: 3]
+                break; //[cite: 3]
+        } // 👈 ปีกกาปิดอันนี้คือตัวปิดคำสั่ง switch (action) ที่สมบูรณ์
+        return true; //[cite: 3]
     }
+        public void returnToMainMenu() {
+            isMainMenu = true;
+            resetGameData(); // รีเซ็ตแต้มและอุปสรรคทั้งหมด[cite: 3]
+            invalidate();    // สั่งวาดหน้าจอใหม่เพื่อกลับสู่หน้าจอเมนูหลักที่มีตัวหนังสือสีส้ม[cite: 3]
+        }
 
     @Override
     public boolean performClick() { return super.performClick(); }

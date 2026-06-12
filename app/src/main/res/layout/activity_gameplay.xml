@@ -4,18 +4,17 @@
     android:layout_height="match_parent"
     android:background="#F8FAFC">
 
-    <!-- ตัวเอนจินวาดพื้นหลังถนน ตัวละคร อุปสรรค และเหรียญทอง -->
     <com.example.coinwalk2.GameView
         android:id="@+id/gameView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- แผง HUD ควบคุมสถิติตามแบบภาพด้านขวา -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="24dp">
 
+        <!-- ใส่ visibility="gone" เพื่อซ่อนตอนอยู่หน้าเมนูหลัก -->
         <TextView
             android:id="@+id/tvScore"
             android:layout_width="wrap_content"
@@ -25,8 +24,10 @@
             android:text="SCORE: 0"
             android:textColor="#1E293B"
             android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone" />
 
+        <!-- ใส่ visibility="gone" เพื่อซ่อนตอนอยู่หน้าเมนูหลัก -->
         <TextView
             android:id="@+id/tvLevel"
             android:layout_width="wrap_content"
@@ -36,10 +37,12 @@
             android:text="LV. 1"
             android:textColor="#EF4444"
             android:textSize="22sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:visibility="gone" />
 
+        <!-- เปลี่ยน ID เป็น btnBack, เปลี่ยนข้อความเป็น BACK, และใส่ visibility="gone" -->
         <TextView
-            android:id="@+id/btnStop"
+            android:id="@+id/btnBack"
             android:layout_width="110dp"
             android:layout_height="46dp"
             android:layout_alignParentBottom="true"
@@ -47,12 +50,13 @@
             android:layout_marginBottom="15dp"
             android:background="@drawable/bg_red_button"
             android:gravity="center"
-            android:text="STOP"
+            android:text="BACK"
             android:textColor="#FFFFFF"
             android:textSize="15sp"
             android:textStyle="bold"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:visibility="gone" />
 
         <LinearLayout
             android:layout_width="wrap_content"
