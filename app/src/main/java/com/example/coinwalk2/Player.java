@@ -18,7 +18,6 @@ public class Player {
             this.x -= speed;
             if (this.x < targetX) this.x = targetX;
         }
-
         // คำนวณความสูงตอนกระโดด (ลดเวลาลงเรื่อยๆ จนจบลูป)[cite: 3]
         if (jumpActionTime > 0) {
             jumpY = -180f * (1f - (Math.abs(10 - jumpActionTime) / 10f));
@@ -26,18 +25,15 @@ public class Player {
         } else {
             jumpY = 0f;
         }
-
         // คำนวณเวลาก้มหลบ[cite: 3]
         if (isDucking) {
             duckActionTime--;
             if (duckActionTime <= 0) isDucking = false;
         }
     }
-
     public void jump() {
         if (jumpActionTime <= 0 && !isDucking) { jumpActionTime = 30; } // เริ่มกระโดด[cite: 3]
     }
-
     public void duck() {
         if (jumpActionTime <= 0 && !isDucking) { isDucking = true; duckActionTime = 12; } // เริ่มก้ม[cite: 3]
     }
