@@ -1,9 +1,12 @@
 package com.example.coinwalk2;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory; // นำเข้าสำหรับโหลดรูปภาพ
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable; // นำเข้าสำหรับดึง Gradient background
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,14 +16,16 @@ import java.util.List;
 import java.util.Random;
 
 public class GameView extends View {
+    private Bitmap logoBitmap; // ตัวแปรเก็บรูปโลโก้
+
     public void pauseGame() {
         this.isPaused = true;
-        invalidate(); // สั่งให้วาดหน้าจอใหม่เพื่อแสดงคำว่า GAME PAUSED[cite: 3]
+        invalidate(); // สั่งให้วาดหน้าจอใหม่เพื่อแสดงคำว่า GAME PAUSED[cite: 13]
     }
     private boolean isMainMenu = true;
     private GameUpdateListener updateListener;
 
-    // ดึงออบเจกต์จากคลาสต่างๆ ที่แยกไว้มาใช้งาน[cite: 3]
+    // ดึงออบเจกต์จากคลาสต่างๆ ที่แยกไว้มาใช้งาน[cite: 13]
     private final Player player = new Player();
     private final Coin coin = new Coin();
     private final List<Obstacle> obstacles = new ArrayList<>();
@@ -38,7 +43,12 @@ public class GameView extends View {
 
     public GameView(Context context) { super(context); init(); }
     public GameView(Context context, AttributeSet attrs) { super(context, attrs); init(); }
-    private void init() { paint.setAntiAlias(true); }
+
+    private void init() {
+        paint.setAntiAlias(true);
+        // 1. โหลดรูปภาพโลโก้ Computer Engineering เข้ามาเตรียมไว้ตั้งแต่เริ่มระบบ
+        logoBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.game_logo);
+    }
 
     public void setGameUpdateListener(GameUpdateListener listener) { this.updateListener = listener; }
 
@@ -50,7 +60,7 @@ public class GameView extends View {
             isInitialized = true;
         }
         drawGamePlay(canvas);
-        if (!isPaused) { invalidate(); } // ลูปเกมวนวาดใหม่เรื่อยๆ[cite: 3]
+        if (!isPaused) { invalidate(); } // ลูปเกมวนวาดใหม่เรื่อยๆ[cite: 13]
     }
 
     private void initGameSetup() {
@@ -76,23 +86,61 @@ public class GameView extends View {
     }
 
     private void drawGamePlay(Canvas canvas) {
+        // ================== [ ส่วนของหน้าเมนูหลัก ] ==================
         if (isMainMenu) {
-            // วาดหน้าเมนูหลัก[cite: 3]
-            paint.setColor(Color.parseColor("#1E293B")); canvas.drawRect(0f, 0f, getWidth(), getHeight(), paint);
-            paint.setColor(Color.parseColor("#F59E0B")); paint.setTextSize(90f); paint.setFakeBoldText(true); paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText("COIN WALK", getWidth() / 2f, getHeight() / 2f - 100f, paint);
-            paint.setColor(Color.parseColor("#10B981")); canvas.drawRoundRect(getWidth() / 2f - 200f, getHeight() / 2f, getWidth() / 2f + 200f, getHeight() / 2f + 120f, 20f, 20f, paint);
-            paint.setColor(Color.WHITE); paint.setTextSize(45f); canvas.drawText("START GAME", getWidth() / 2f, getHeight() / 2f + 75f, paint);
+            // 1. วาดพื้นหลัง Gradient จาก XML
+            Drawable bgDrawable = getContext().getDrawable(R.drawable.bg_gradient_menu);
+            if (bgDrawable != null) {
+                bgDrawable.setBounds(0, 0, getWidth(), getHeight());
+                bgDrawable.draw(canvas);
+            } else {
+                paint.setColor(Color.parseColor("#1E293B")); canvas.drawRect(0f, 0f, getWidth(), getHeight(), paint);
+            }
+
+            float centerX = getWidth() / 2f;
+            float centerY = getHeight() / 2f;
+
+            // 2. จัดวางโลโก้ (ย่อขนาดลงเล็กน้อยให้สมส่วน และดันขึ้นไปด้านบนสุด)
+            int logoSize = 380;
+            int logoLeft = (int) (centerX - (logoSize / 2f));
+            int logoTop = (int) (centerY - 450f); // ขยับขึ้นไปด้านบน
+
+            if (logoBitmap != null) {
+                android.graphics.Rect destRect = new android.graphics.Rect(logoLeft, logoTop, logoLeft + logoSize, logoTop + logoSize);
+                canvas.drawBitmap(logoBitmap, null, destRect, paint);
+            }
+
+            // 3. วาดชื่อเกม COIN WALK (ขยับลงมาอยู่ใต้โลโก้พอดี ไม่ซ้อนทับกัน)
+            paint.setColor(Color.parseColor("#F59E0B"));
+            paint.setTextSize(95f);
+            paint.setFakeBoldText(true);
+            paint.setTextAlign(Paint.Align.CENTER);
+            float titleY = centerY + 50f; // พิกัดใต้โลโก้
+            canvas.drawText("COIN WALK", centerX, titleY, paint);
+
+            // 4. วาดปุ่ม START GAME (ขยับลงมาด้านล่างถัดจากชื่อเกม)
+            float btnWidth = 460f;
+            float btnHeight = 130f;
+            float btnLeft = centerX - (btnWidth / 2f);
+            float btnTop = titleY + 100f; // ห่างจากชื่อเกมลงมา 100 พิกเซลเพื่อความโปร่ง
+
+            paint.setColor(Color.parseColor("#10B981"));
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawRoundRect(btnLeft, btnTop, btnLeft + btnWidth, btnTop + btnHeight, 25f, 25f, paint);
+
+            // 5. วาดตัวหนังสือบนปุ่ม START GAME
+            paint.setColor(Color.WHITE);
+            paint.setTextSize(42f);
+            float textY = btnTop + (btnHeight / 2f) - ((paint.descent() + paint.ascent()) / 2f);
+            canvas.drawText("START GAME", centerX, textY, paint);
             return;
         }
+        // ==========================================================
 
         int currentLevel = (score / 20) + 1;
         float laneWidth = getWidth() / 3f;
 
-        // วาด UI คะแนน[cite: 3]
-        paint.setColor(Color.parseColor("#1E293B")); paint.setFakeBoldText(true); paint.setTextAlign(Paint.Align.LEFT);
-
-        // วาดเลนถนน[cite: 3]
+        // วาดเลนถนน[cite: 13]
         paint.setColor(Color.parseColor("#CBD5E1"));
         paint.setStrokeWidth(6f);
         for (int i = 1; i <= 2; i++) {
@@ -104,11 +152,11 @@ public class GameView extends View {
             float playerSpeed = 22f + (currentLevel * 2.0f);
             float targetX = (player.currentLane * laneWidth) + (laneWidth / 2f);
 
-            // อัปเดตคลาสโมเดลต่างๆ[cite: 3]
+            // อัปเดตคลาสโมเดลต่างๆ[cite: 13]
             player.update(targetX, playerSpeed);
             coin.update(9f + (currentLevel * 2.0f), getPlayableBottom(), laneWidth, random);
 
-            // สุ่มสร้างอุปสรรค[cite: 3]
+            // สุ่มสร้างอุปสรรค[cite: 13]
             int spawnRate = Math.max(14, 60 - (currentLevel * 6));
             if (gameTick % spawnRate == 0) {
                 int obstacleLane = random.nextInt(3);
@@ -118,7 +166,7 @@ public class GameView extends View {
                 obstacles.add(new Obstacle(obsX, 0f, obsSpeed, obsType));
             }
 
-            // ขยับและตรวจการชนอุปสรรค[cite: 3]
+            // ขยับและตรวจการชนอุปสรรค[cite: 13]
             Iterator<Obstacle> iterator = obstacles.iterator();
             while (iterator.hasNext()) {
                 Obstacle obs = iterator.next();
@@ -129,14 +177,14 @@ public class GameView extends View {
                     else if (obs.type == 2 && player.isDucking) { /* ก้มหลบพ้น */ }
                     else {
                         this.isPaused = true;
-                        if (updateListener != null) { updateListener.onGameOver(); } // ชน! ส่งสัญญาณไปหน้าจอหลัก[cite: 3]
+                        if (updateListener != null) { updateListener.onGameOver(); } // ชน! ส่งสัญญาณไปหน้าจอหลัก[cite: 13]
                         return;
                     }
                 }
                 if (obs.y > getPlayableBottom() + 100f) { iterator.remove(); }
             }
 
-            // ตรวจการกินเหรียญ[cite: 3]
+            // ตรวจการกินเหรียญ[cite: 13]
             if (checkCircleCollision(player.x, player.y + player.jumpY, coin.x, coin.y)) {
                 score += 5;
                 if (updateListener != null) { updateListener.onScoreUpdated(score, (score / 20) + 1); }
@@ -144,24 +192,24 @@ public class GameView extends View {
             }
         }
 
-        // วาดเหรียญทอง[cite: 3]
+        // วาดเหรียญทอง[cite: 13]
         if (coin.y <= getPlayableBottom()) {
             paint.setColor(Color.parseColor("#F59E0B")); canvas.drawCircle(coin.x, coin.y, coin.radius, paint);
         }
 
-        // วาดสิ่งกีดขวาง[cite: 3]
+        // วาดสิ่งกีดขวาง[cite: 13]
         for (Obstacle obs : obstacles) {
             paint.setColor(obs.type == 1 ? Color.parseColor("#EF4444") : Color.parseColor("#F97316"));
             canvas.drawRoundRect(obs.x - 55f, obs.y - 25f, obs.x + 55f, obs.y + 15f, 8f, 8f, paint);
         }
 
-        // วาดตัวละคร[cite: 3]
+        // วาดตัวละคร[cite: 13]
         float drawY = player.y + player.jumpY;
         paint.setColor(player.isDucking ? Color.parseColor("#1D4ED8") : Color.parseColor("#3B82F6"));
         canvas.drawCircle(player.x, drawY, player.isDucking ? 45f : 55f, paint);
 
         if (isPaused) {
-            // ฉากหยุดเกม[cite: 3]
+            // ฉากหยุดเกม[cite: 13]
             paint.setColor(Color.argb(180, 15, 23, 42)); canvas.drawRect(0f, 0f, getWidth(), getHeight(), paint);
             paint.setColor(Color.parseColor("#F59E0B")); paint.setTextSize(75f); paint.setTextAlign(Paint.Align.CENTER);
             canvas.drawText("GAME PAUSED", getWidth() / 2f, getHeight() / 2f - 30f, paint);
@@ -175,75 +223,79 @@ public class GameView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        int action = event.getActionMasked(); //[cite: 3]
-        float touchX = event.getX(); //[cite: 3]
-        float touchY = event.getY(); //[cite: 3]
+        int action = event.getActionMasked();
+        float touchX = event.getX();
+        float touchY = event.getY();
 
-        switch (action) { //[cite: 3]
-            case MotionEvent.ACTION_DOWN: //[cite: 3]
-                startTouchX = touchX; //[cite: 3]
-                startTouchY = touchY; //[cite: 3]
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                startTouchX = touchX;
+                startTouchY = touchY;
 
-                // 1. ตรวจสอบว่าอยู่หน้าเมนูหลัก และกดปุ่ม START หรือไม่
-                if (isMainMenu) { //[cite: 3]
-                    if (touchX >= getWidth() / 2f - 200f && touchX <= getWidth() / 2f + 200f &&
-                            touchY >= getHeight() / 2f && touchY <= getHeight() / 2f + 120f) { //[cite: 3]
+                if (isMainMenu) {
+                    float titleY = (getHeight() / 2f) + 50f;
+                    float btnTop = titleY + 100f;
+                    float btnBottom = btnTop + 130f;
+                    float btnLeft = (getWidth() / 2f) - 230f;
+                    float btnRight = (getWidth() / 2f) + 230f;
+
+                    if (touchX >= btnLeft && touchX <= btnRight &&
+                            touchY >= btnTop && touchY <= btnBottom) {
 
                         isMainMenu = false;
-                        isPaused = false; //[cite: 3]
+                        isPaused = false;
 
-                        // ส่งสัญญาณบอก MainActivity ให้เปิดการแสดงผลปุ่มต่างๆ บนหน้าจอ
                         if (updateListener != null) {
                             updateListener.onGameStarted();
                         }
 
-                        invalidate(); //[cite: 3]
+                        invalidate();
                     }
-                    return true; //[cite: 3]
+                    return true;
                 }
 
-                // 2. ถ้าเกม Pause อยู่ ให้แตะเพื่อ Resume เล่นต่อ
-                if (isPaused) { //[cite: 3]
-                    isPaused = false; //[cite: 3]
-                    invalidate(); //[cite: 3]
-                    return true; //[cite: 3]
+                if (isPaused) {
+                    isPaused = false;
+                    invalidate();
+                    return true;
                 }
-                break; //[cite: 3]
+                break;
 
-            case MotionEvent.ACTION_UP: //[cite: 3]
-                if (!isPaused && !isMainMenu) { //[cite: 3]
-                    float diffX = touchX - startTouchX; //[cite: 3]
-                    float diffY = touchY - startTouchY; //[cite: 3]
+            case MotionEvent.ACTION_UP:
+                if (!isPaused && !isMainMenu) {
+                    float diffX = touchX - startTouchX;
+                    float diffY = touchY - startTouchY;
 
-                    if (Math.abs(diffX) > minSwipeDistance || Math.abs(diffY) > minSwipeDistance) { //[cite: 3]
-                        if (Math.abs(diffX) > Math.abs(diffY)) { //[cite: 3]
+                    if (Math.abs(diffX) > minSwipeDistance || Math.abs(diffY) > minSwipeDistance) {
+                        if (Math.abs(diffX) > Math.abs(diffY)) {
                             if (diffX > 0) {
-                                if (player.currentLane < 2) player.currentLane++; //[cite: 3]
+                                if (player.currentLane < 2) player.currentLane++;
                             } else {
-                                if (player.currentLane > 0) player.currentLane--; //[cite: 3]
+                                if (player.currentLane > 0) player.currentLane--;
                             }
                         } else {
                             if (diffY > 0) {
-                                player.duck(); // เรียกคำสั่งก้มจากคลาส Player ที่แยกไว้[cite: 3]
+                                player.duck();
                             } else {
-                                player.jump(); // ้เรียกคำสั่งกระโดดจากคลาส Player ที่แยกไว้[cite: 3]
+                                player.jump();
                             }
                         }
                     } else {
-                        isPaused = true; //[cite: 3]
-                        invalidate(); //[cite: 3]
+                        isPaused = true;
+                        invalidate();
                     }
                 }
-                performClick(); //[cite: 3]
-                break; //[cite: 3]
-        } // 👈 ปีกกาปิดอันนี้คือตัวปิดคำสั่ง switch (action) ที่สมบูรณ์
-        return true; //[cite: 3]
-    }
-        public void returnToMainMenu() {
-            isMainMenu = true;
-            resetGameData(); // รีเซ็ตแต้มและอุปสรรคทั้งหมด[cite: 3]
-            invalidate();    // สั่งวาดหน้าจอใหม่เพื่อกลับสู่หน้าจอเมนูหลักที่มีตัวหนังสือสีส้ม[cite: 3]
+                performClick();
+                break;
         }
+        return true;
+    }
+
+    public void returnToMainMenu() {
+        isMainMenu = true;
+        resetGameData(); // รีเซ็ตแต้มและอุปสรรคทั้งหมด[cite: 13]
+        invalidate();    // สั่งวาดหน้าจอใหม่เพื่อกลับสู่หน้าจอเมนูหลักที่มีตัวหนังสือสีส้ม[cite: 13]
+    }
 
     @Override
     public boolean performClick() { return super.performClick(); }
