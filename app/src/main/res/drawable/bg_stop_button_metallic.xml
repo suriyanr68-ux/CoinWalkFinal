@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <!-- เฉดสีแดงเมทัลลิกเนื้อนูน -->
+    <gradient
+        android:startColor="#EF4444"
+        android:centerColor="#DC2626"
+        android:endColor="#991B1B"
+        android:angle="270" />
+    <corners android:radius="18dp" />
+    <!-- เส้นขอบเหล็กทองแดงรอบปุ่ม -->
+    <stroke
+        android:width="4dp"
+        android:color="#FCA5A5" />
+</shape>

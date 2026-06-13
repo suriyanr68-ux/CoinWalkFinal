@@ -12,35 +12,41 @@ public class MainActivity extends AppCompatActivity implements GameUpdateListene
     private GameView gameView;
     private TextView tvScore;
     private TextView tvLevel;
-    private TextView btnBack;
+    private View btnBack; // เปลี่ยนเป็น View เพื่อรองรับ LinearLayout
+    private View containerScore;
+    private View containerLevel;
     private int currentLevel = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_gameplay); // แก้ไขตรงนี้เรียบร้อยแล้วครับ
+        setContentView(R.layout.activity_gameplay);
 
         gameView = findViewById(R.id.gameView);
         tvScore = findViewById(R.id.tvScore);
         tvLevel = findViewById(R.id.tvLevel);
         btnBack = findViewById(R.id.btnBack);
+        containerScore = findViewById(R.id.containerScore);
+        containerLevel = findViewById(R.id.containerLevel);
 
         gameView.setGameUpdateListener(this);
 
-        btnBack.setOnClickListener(v -> {
-            gameView.returnToMainMenu();
-            tvScore.setVisibility(View.GONE);
-            tvLevel.setVisibility(View.GONE);
-            btnBack.setVisibility(View.GONE);
-            currentLevel = 1;
-        });
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                gameView.returnToMainMenu();
+                if (containerScore != null) containerScore.setVisibility(View.GONE);
+                if (containerLevel != null) containerLevel.setVisibility(View.GONE);
+                btnBack.setVisibility(View.GONE);
+                currentLevel = 1;
+            });
+        }
     }
 
     @Override
     public void onGameStarted() {
         runOnUiThread(() -> {
-            if (tvScore != null) tvScore.setVisibility(View.VISIBLE);
-            if (tvLevel != null) tvLevel.setVisibility(View.VISIBLE);
+            if (containerScore != null) containerScore.setVisibility(View.VISIBLE);
+            if (containerLevel != null) containerLevel.setVisibility(View.VISIBLE);
             if (btnBack != null) btnBack.setVisibility(View.VISIBLE);
         });
     }
@@ -54,8 +60,8 @@ public class MainActivity extends AppCompatActivity implements GameUpdateListene
     public void onScoreUpdated(int currentScore, int currentLevel) {
         this.currentLevel = currentLevel;
         runOnUiThread(() -> {
-            if (tvScore != null) tvScore.setText("SCORE: " + currentScore);
-            if (tvLevel != null) tvLevel.setText("LV. " + currentLevel);
+            if (tvScore != null) tvScore.setText(String.valueOf(currentScore)); // เปลี่ยนให้แสดงแค่ตัวเลข
+            if (tvLevel != null) tvLevel.setText(String.valueOf(currentLevel)); // เปลี่ยนให้แสดงแค่ตัวเลข
         });
     }
 

@@ -60,7 +60,8 @@ public class GameView extends View {
             isInitialized = true;
         }
         drawGamePlay(canvas);
-        if (!isPaused) { invalidate(); } // ลูปเกมวนวาดใหม่เรื่อยๆ[cite: 13]
+        if (!isPaused) { invalidate(); }// ลูปเกมวนวาดใหม่เรื่อยๆ[cite: 13]
+
     }
 
     private void initGameSetup() {
@@ -88,47 +89,50 @@ public class GameView extends View {
     private void drawGamePlay(Canvas canvas) {
         // ================== [ ส่วนของหน้าเมนูหลัก ] ==================
         if (isMainMenu) {
-            // 1. วาดพื้นหลัง Gradient จาก XML
-            Drawable bgDrawable = getContext().getDrawable(R.drawable.bg_gradient_menu);
+            // ดึงรูปภาพโค้ดเรืองแสงไซไฟ bg_cyber_code ที่เราเพิ่มเข้ามามาใช้เป็นพื้นหลัง
+            Drawable bgDrawable = getContext().getDrawable(R.drawable.bg_cyber_code);
             if (bgDrawable != null) {
                 bgDrawable.setBounds(0, 0, getWidth(), getHeight());
                 bgDrawable.draw(canvas);
             } else {
-                paint.setColor(Color.parseColor("#1E293B")); canvas.drawRect(0f, 0f, getWidth(), getHeight(), paint);
+                // สีน้ำเงินเข้มสไตล์อวกาศ (กรณีรูปภาพโหลดไม่ติด)
+                paint.setColor(Color.parseColor("#0B132B"));
+                canvas.drawRect(0f, 0f, getWidth(), getHeight(), paint);
             }
 
             float centerX = getWidth() / 2f;
             float centerY = getHeight() / 2f;
 
-            // 2. จัดวางโลโก้ (ย่อขนาดลงเล็กน้อยให้สมส่วน และดันขึ้นไปด้านบนสุด)
+            // วาดโลโก้ตรงกลางด้านบน
             int logoSize = 380;
             int logoLeft = (int) (centerX - (logoSize / 2f));
-            int logoTop = (int) (centerY - 450f); // ขยับขึ้นไปด้านบน
+            int logoTop = (int) (centerY - 450f);
 
             if (logoBitmap != null) {
                 android.graphics.Rect destRect = new android.graphics.Rect(logoLeft, logoTop, logoLeft + logoSize, logoTop + logoSize);
                 canvas.drawBitmap(logoBitmap, null, destRect, paint);
             }
 
-            // 3. วาดชื่อเกม COIN WALK (ขยับลงมาอยู่ใต้โลโก้พอดี ไม่ซ้อนทับกัน)
+            // ข้อความชื่อเกม COIN WALK สีส้มทองตัดกับพื้นหลังสีน้ำเงินนีออน
             paint.setColor(Color.parseColor("#F59E0B"));
             paint.setTextSize(95f);
             paint.setFakeBoldText(true);
             paint.setTextAlign(Paint.Align.CENTER);
-            float titleY = centerY + 50f; // พิกัดใต้โลโก้
+            float titleY = centerY + 50f;
             canvas.drawText("COIN WALK", centerX, titleY, paint);
 
-            // 4. วาดปุ่ม START GAME (ขยับลงมาด้านล่างถัดจากชื่อเกม)
+            // ปุ่ม START GAME
             float btnWidth = 460f;
             float btnHeight = 130f;
             float btnLeft = centerX - (btnWidth / 2f);
-            float btnTop = titleY + 100f; // ห่างจากชื่อเกมลงมา 100 พิกเซลเพื่อความโปร่ง
+            float btnTop = titleY + 100f;
 
+            // ปรับสีปุ่มให้เป็นสีเขียวนีออนสว่างเพื่อให้ลอยเด่นขึ้นมาจากพื้นหลังลายโค้ด
             paint.setColor(Color.parseColor("#10B981"));
             paint.setStyle(Paint.Style.FILL);
             canvas.drawRoundRect(btnLeft, btnTop, btnLeft + btnWidth, btnTop + btnHeight, 25f, 25f, paint);
 
-            // 5. วาดตัวหนังสือบนปุ่ม START GAME
+            // ข้อความบนปุ่ม
             paint.setColor(Color.WHITE);
             paint.setTextSize(42f);
             float textY = btnTop + (btnHeight / 2f) - ((paint.descent() + paint.ascent()) / 2f);
@@ -140,23 +144,54 @@ public class GameView extends View {
         int currentLevel = (score / 20) + 1;
         float laneWidth = getWidth() / 3f;
 
-        // วาดเลนถนน[cite: 13]
-        paint.setColor(Color.parseColor("#CBD5E1"));
-        paint.setStrokeWidth(6f);
+        // 1. วาดพื้นหลังกระดานเกมเพลย์เป็นสีเทาเงิน (ผิวโลหะ)
+        paint.setStyle(Paint.Style.FILL);
+        paint.setColor(Color.parseColor("#C0C8D0")); // สีเทาอลูมิเนียม
+        canvas.drawRect(0f, 0f, getWidth(), getPlayableBottom(), paint);
+
+        // ================= [ เพิ่มโค้ดวาด LOGO แบบลางๆ ตรงนี้ ] =================
+        if (logoBitmap != null) {
+            int oldAlpha = paint.getAlpha(); // บันทึกค่าความชัดเดิมไว้ก่อน
+
+            paint.setAlpha(35); // ตั้งค่าความจาง (0 คือโปร่งใสสนิท, 255 คือชัด 100%) เลข 35 จะได้ความจางกำลังดีครับ
+
+            float centerX = getWidth() / 2f;
+            float centerY = getPlayableBottom() / 2f; // กึ่งกลางพื้นที่เล่นเกม
+            int gameplayLogoSize = 550; // ปรับขนาดโลโก้ในพื้นหลังตามต้องการ
+
+            int logoLeft = (int) (centerX - (gameplayLogoSize / 2f));
+            int logoTop = (int) (centerY - (gameplayLogoSize / 2f));
+
+            android.graphics.Rect destRect = new android.graphics.Rect(logoLeft, logoTop, logoLeft + gameplayLogoSize, logoTop + gameplayLogoSize);
+            canvas.drawBitmap(logoBitmap, null, destRect, paint);
+
+            paint.setAlpha(oldAlpha); // คืนค่าความชัดกลับมาเป็นปกติ เพื่อไม่ให้ตัวละครหรือเหรียญจางตามไปด้วย
+        }
+        // ====================================================================
+
+        // 2. วาดเส้นเลนถนนแบบนีออนไซไฟ
         for (int i = 1; i <= 2; i++) {
             float lx = i * laneWidth;
+
+            // แสงเรืองแสงสีฟ้าด้านหลัง
+            paint.setColor(Color.parseColor("#4099CCFF"));
+            paint.setStrokeWidth(16f);
+            canvas.drawLine(lx, 0f, lx, getPlayableBottom(), paint);
+
+            // แกนกลางเส้นสีขาวสว่าง
+            paint.setColor(Color.WHITE);
+            paint.setStrokeWidth(6f);
             canvas.drawLine(lx, 0f, lx, getPlayableBottom(), paint);
         }
+
         if (!isPaused) {
             gameTick++;
             float playerSpeed = 22f + (currentLevel * 2.0f);
             float targetX = (player.currentLane * laneWidth) + (laneWidth / 2f);
 
-            // อัปเดตคลาสโมเดลต่างๆ[cite: 13]
             player.update(targetX, playerSpeed);
             coin.update(9f + (currentLevel * 2.0f), getPlayableBottom(), laneWidth, random);
 
-            // สุ่มสร้างอุปสรรค[cite: 13]
             int spawnRate = Math.max(14, 60 - (currentLevel * 6));
             if (gameTick % spawnRate == 0) {
                 int obstacleLane = random.nextInt(3);
@@ -166,8 +201,7 @@ public class GameView extends View {
                 obstacles.add(new Obstacle(obsX, 0f, obsSpeed, obsType));
             }
 
-            // ขยับและตรวจการชนอุปสรรค[cite: 13]
-            Iterator<Obstacle> iterator = obstacles.iterator();
+            java.util.Iterator<Obstacle> iterator = obstacles.iterator();
             while (iterator.hasNext()) {
                 Obstacle obs = iterator.next();
                 obs.update();
@@ -177,14 +211,13 @@ public class GameView extends View {
                     else if (obs.type == 2 && player.isDucking) { /* ก้มหลบพ้น */ }
                     else {
                         this.isPaused = true;
-                        if (updateListener != null) { updateListener.onGameOver(); } // ชน! ส่งสัญญาณไปหน้าจอหลัก[cite: 13]
+                        if (updateListener != null) { updateListener.onGameOver(); }
                         return;
                     }
                 }
                 if (obs.y > getPlayableBottom() + 100f) { iterator.remove(); }
             }
 
-            // ตรวจการกินเหรียญ[cite: 13]
             if (checkCircleCollision(player.x, player.y + player.jumpY, coin.x, coin.y)) {
                 score += 5;
                 if (updateListener != null) { updateListener.onScoreUpdated(score, (score / 20) + 1); }
@@ -192,24 +225,32 @@ public class GameView extends View {
             }
         }
 
-        // วาดเหรียญทอง[cite: 13]
+        // วาดเหรียญทอง (เปลี่ยนสีให้เข้ากับธีม)
         if (coin.y <= getPlayableBottom()) {
-            paint.setColor(Color.parseColor("#F59E0B")); canvas.drawCircle(coin.x, coin.y, coin.radius, paint);
+            paint.setColor(Color.parseColor("#EAB308")); // สีทองเหลืองเข้ม
+            canvas.drawCircle(coin.x, coin.y, coin.radius, paint);
+            paint.setColor(Color.parseColor("#CA8A04"));
+            canvas.drawCircle(coin.x, coin.y, coin.radius - 8f, paint);
         }
 
-        // วาดสิ่งกีดขวาง[cite: 13]
+        // วาดสิ่งกีดขวาง (ปรับสีให้เป็นเมทัลลิกแดง-ส้ม)
         for (Obstacle obs : obstacles) {
-            paint.setColor(obs.type == 1 ? Color.parseColor("#EF4444") : Color.parseColor("#F97316"));
-            canvas.drawRoundRect(obs.x - 55f, obs.y - 25f, obs.x + 55f, obs.y + 15f, 8f, 8f, paint);
+            paint.setColor(obs.type == 1 ? Color.parseColor("#B91C1C") : Color.parseColor("#C2410C"));
+            canvas.drawRoundRect(obs.x - 55f, obs.y - 25f, obs.x + 55f, obs.y + 15f, 12f, 12f, paint);
+
+            paint.setColor(Color.parseColor("#7F1D1D"));
+            canvas.drawRect(obs.x - 45f, obs.y - 5f, obs.x + 45f, obs.y + 5f, paint);
         }
 
-        // วาดตัวละคร[cite: 13]
+        // วาดตัวละคร (โทนสีน้ำเงินเหล็ก)
         float drawY = player.y + player.jumpY;
-        paint.setColor(player.isDucking ? Color.parseColor("#1D4ED8") : Color.parseColor("#3B82F6"));
+        paint.setColor(player.isDucking ? Color.parseColor("#1E3A8A") : Color.parseColor("#2563EB"));
         canvas.drawCircle(player.x, drawY, player.isDucking ? 45f : 55f, paint);
 
+        paint.setColor(Color.parseColor("#93C5FD"));
+        canvas.drawCircle(player.x, drawY, 15f, paint);
+
         if (isPaused) {
-            // ฉากหยุดเกม[cite: 13]
             paint.setColor(Color.argb(180, 15, 23, 42)); canvas.drawRect(0f, 0f, getWidth(), getHeight(), paint);
             paint.setColor(Color.parseColor("#F59E0B")); paint.setTextSize(75f); paint.setTextAlign(Paint.Align.CENTER);
             canvas.drawText("GAME PAUSED", getWidth() / 2f, getHeight() / 2f - 30f, paint);
