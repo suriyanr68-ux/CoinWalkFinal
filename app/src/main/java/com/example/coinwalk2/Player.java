@@ -1,40 +1,41 @@
 package com.example.coinwalk2;
 
-public class Player {
-    public float x = 0f;
-    public float y = 0f;
-    public float jumpY = 0f;      // พิกัด Y เสริมตอนกระโดด
-    public int currentLane = 1;   // เลนปัจจุบัน (0, 1, 2)
-    public int jumpActionTime = 0;// เวลาในการกระโดด[cite: 3]
-    public boolean isDucking = false; // กำลังก้มอยู่หรือไม่[cite: 3]
-    public int duckActionTime = 0; // เวลาในการก้ม[cite: 3]
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 
+public class Player {
+    public float x, y;
+    public float jumpY = 0;
+    public int currentLane = 1; // 0=ซ้าย, 1=กลาง, 2=ขวา
+    public boolean isDucking = false;
+
+    // === เพิ่มโค้ดส่วนนี้เข้าไปเพื่อแก้ Error ตัวเมื่อกี้ครับ ===
+    public Player(float startX, float startY) {
+        this.x = startX;
+        this.y = startY;
+    }
+    // ===================================================
+
+    // อัปเดตตำแหน่งการสไลด์เปลี่ยนเลน
     public void update(float targetX, float speed) {
-        // แอนิเมชันสไลด์เปลี่ยนเลน ซ้าย-ขวา[cite: 3]
-        if (this.x < targetX) {
-            this.x += speed;
-            if (this.x > targetX) this.x = targetX;
-        } else if (this.x > targetX) {
-            this.x -= speed;
-            if (this.x < targetX) this.x = targetX;
-        }
-        // คำนวณความสูงตอนกระโดด (ลดเวลาลงเรื่อยๆ จนจบลูป)[cite: 3]
-        if (jumpActionTime > 0) {
-            jumpY = -180f * (1f - (Math.abs(10 - jumpActionTime) / 10f));
-            jumpActionTime--;
-        } else {
-            jumpY = 0f;
-        }
-        // คำนวณเวลาก้มหลบ[cite: 3]
-        if (isDucking) {
-            duckActionTime--;
-            if (duckActionTime <= 0) isDucking = false;
+        if (x < targetX) {
+            x = Math.min(x + speed, targetX);
+        } else if (x > targetX) {
+            x = Math.max(x - speed, targetX);
         }
     }
-    public void jump() {
-        if (jumpActionTime <= 0 && !isDucking) { jumpActionTime = 30; } // เริ่มกระโดด[cite: 3]
-    }
-    public void duck() {
-        if (jumpActionTime <= 0 && !isDucking) { isDucking = true; duckActionTime = 12; } // เริ่มก้ม[cite: 3]
+
+    // วาดตัวละครธีมไฮเทค
+    public void draw(Canvas canvas, Paint paint) {
+        float drawY = y + jumpY;
+
+        // ร่างกายโทนสีน้ำเงินเหล็กเมทัลลิก
+        paint.setColor(isDucking ? Color.parseColor("#1E3A8A") : Color.parseColor("#2563EB"));
+        canvas.drawCircle(x, drawY, isDucking ? 45f : 55f, paint);
+
+        // แกนพลังงานเรืองแสงตรงกลางตัว
+        paint.setColor(Color.parseColor("#93C5FD"));
+        canvas.drawCircle(x, drawY, 15f, paint);
     }
 }
