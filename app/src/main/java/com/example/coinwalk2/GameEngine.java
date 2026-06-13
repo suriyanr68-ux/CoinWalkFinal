@@ -40,7 +40,7 @@ public class GameEngine {
         if (isMainMenu || isPaused) return;
 
         gameTick++;
-        currentLevel = (score / 20) + 1;
+        currentLevel = (score / 50) + 1;
 
         float playerSpeed = 22f + (currentLevel * 2.0f);
         float targetX = (player.currentLane * laneWidth) + (laneWidth / 2f);
