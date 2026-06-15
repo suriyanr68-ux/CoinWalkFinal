@@ -51,7 +51,7 @@ public class GameRenderer {
         }
 
         // ข้อความ COIN WALK
-        paint.setColor(Color.parseColor("#F59E0B")); paint.setTextSize(95f); paint.setFakeBoldText(true); paint.setTextAlign(Paint.Align.CENTER);
+        paint.setColor(Color.parseColor("White")); paint.setTextSize(95f); paint.setFakeBoldText(true); paint.setTextAlign(Paint.Align.CENTER);
         canvas.drawText("COIN WALK", centerX, centerY + 50f, paint);
 
         // ปุ่ม START GAME

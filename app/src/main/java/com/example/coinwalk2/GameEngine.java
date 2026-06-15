@@ -65,23 +65,20 @@ public class GameEngine {
             Obstacle obs = iterator.next();
             obs.update();
 
+            // เช็กแค่ว่าอยู่เลนเดียวกัน (x ใกล้กัน) และพิกัด Y ชนกันพอดี
             if (Math.abs(obs.x - player.x) < 60f && obs.y > player.y - 100f && obs.y < playableBottom - 30f) {
-                if (obs.type == 1 && player.jumpY < -60f) { /* หลบพ้น */ }
-                else if (obs.type == 2 && player.isDucking) { /* หลบพ้น */ }
-                else {
-                    this.isPaused = true;
-                    if (updateListener != null) updateListener.onGameOver();
-                    return;
-                }
+                this.isPaused = true;
+                if (updateListener != null) updateListener.onGameOver();
+                return;
             }
             if (obs.y > playableBottom + 100f) {
                 iterator.remove();
             }
         }
 
-        // 4. ตรวจจับการเก็บเหรียญ
+        // 4. ตรวจจับการเก็บเหรียญ (เอา player.jumpY ออก)
         float dx = player.x - coin.x;
-        float dy = (player.y + player.jumpY) - coin.y;
+        float dy = player.y - coin.y; // ลบตัวแปร jumpY ออกแล้ว
         float distanceSq = (dx * dx) + (dy * dy);
         float radiusSum = 50f + coin.radius;
 

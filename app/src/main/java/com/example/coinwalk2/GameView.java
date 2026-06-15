@@ -91,18 +91,12 @@ public class GameView extends View {
                 float diffY = event.getY() - touchY;
 
                 if (!gameEngine.isMainMenu && !gameEngine.isPaused) {
-                    // ตรวจจับการ Swipe (ปัดหน้าจอเพื่อหลบหลีก)
+                    // ตรวจจับการ Swipe (เหลือเฉพาะ ปัดซ้าย-ปัดขวา)
                     if (Math.abs(diffX) > Math.abs(diffY)) {
                         if (diffX > 100f && gameEngine.player.currentLane < 2) gameEngine.player.currentLane++; // ปัดขวา
                         else if (diffX < -100f && gameEngine.player.currentLane > 0) gameEngine.player.currentLane--; // ปัดซ้าย
-                    } else {
-                        if (diffY < -100f && gameEngine.player.jumpY == 0) {
-                            // โค้ดสั่งกระโดด (สามารถใส่ระบบ Jump Thread ในโมเดลดั้งเดิมของคุณได้เลย)
-                            gameEngine.player.jumpY = -150f;
-                        } else if (diffY > 100f) {
-                            gameEngine.player.isDucking = true;
-                        }
                     }
+                    // ส่วนของ diffY (ขึ้น-ลง) ถูกตัดออกไปแล้ว
                 }
                 return true;
         }
